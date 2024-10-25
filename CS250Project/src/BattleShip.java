@@ -1,4 +1,5 @@
 //Battleship class
+//add Oct 25, 2024
 //import java.util.Random;
 
 public class BattleShip {

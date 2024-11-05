@@ -1,12 +1,14 @@
 import java.awt.EventQueue;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import java.awt.GridLayout;
+import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -14,12 +16,12 @@ public class BattleShipGame extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
-    private JPanel panel;
     private JComboBox<String> comboAIorPlayer;
     private JButton btnReady;
+    private JTextArea rulesTextArea; //display rules
 
     /**
-     * Launch the application.
+     * Launch
      */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -33,7 +35,7 @@ public class BattleShipGame extends JFrame {
     }
 
     /**
-     * Create the frame.
+     * frame
      */
     public BattleShipGame() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -41,32 +43,47 @@ public class BattleShipGame extends JFrame {
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
-        contentPane.setLayout(new GridLayout(1, 0, 0, 0));
         
-        panel = new JPanel();
-        contentPane.add(panel);
+        //BoxLayout to stack components vertically
+        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         
+        //the combo box
         comboAIorPlayer = new JComboBox<>();
         comboAIorPlayer.setModel(new DefaultComboBoxModel<>(new String[] {"AI", "Player"}));
-        panel.add(comboAIorPlayer);
+        contentPane.add(comboAIorPlayer);
         
+        //Ready button
         btnReady = new JButton("Ready?");
-        panel.add(btnReady);
+        contentPane.add(btnReady);
+        
+        //Initialize and add rules text area
+        rulesTextArea = new JTextArea();
+        rulesTextArea.setEditable(false); // Make the text area read-only
+        rulesTextArea.setText("Game Rules:\n"
+                + "1. Place your ships on the grid.\n"
+                + "2. Use your turns to guess the locations of the opponent's ships.\n"
+                + "3. A hit will be SHOT, and if all parts of a ship are hit, it is sunk.\n"
+                + "4. The game ends when all ships of one player have sunk.\n"
+                + "5. Have fun!");
 
-        // Add action listener to the button
+        //scroll pane to the text area
+        JScrollPane scrollPane = new JScrollPane(rulesTextArea);
+        scrollPane.setPreferredSize(new java.awt.Dimension(400, 100)); //size for the scroll pane
+        contentPane.add(scrollPane);
+
+        //action listener to the button
         btnReady.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selected = (String) comboAIorPlayer.getSelectedItem();
                 if ("AI".equals(selected)) {
-                    // Open the game screen for AI
+                    //open the game screen for AI
                     GameAi gameai = new GameAi();
                     gameai.setVisible(true);
-                    dispose(); // Close the current window
+                    dispose(); //close the current window
                 } else {
-                    // Logic for starting a player vs player game can go here
+                    //starting a player vs player game can go here
                     JOptionPane.showMessageDialog(null, "Starting player vs player game!");
-                    // Optionally, create another game screen for player vs player
                 }
             }
         });

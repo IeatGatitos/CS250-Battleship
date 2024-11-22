@@ -3,44 +3,63 @@
 //import java.util.Random;
 
 public class BattleShip {
-	private int length = 10;
-	private char ship;
-	private char hit;
-	private char miss;
-	
-	
-	
-	public BattleShip(int SIZE, char S, char X, char O) {
-		length = SIZE;
-		char ship = S;
-		char hit = X;
-		char miss = O;
-	}
-	
-	public void setLength(int SIZE){ //setter method
-		length = SIZE; // set
-	}
-	
-	public void setShip(char S){ //setter method
-		ship = S; // set
-	}
-	public void setHit(char X){ //setter method
-		hit = X; // set
-	}
-	public void setMiss(char O){ //setter method
-		miss = O; // set
-	}
-	public int getLength(){ //setter method
-		return length; // set
-	}
-	
-	public char getShip(){ //setter method
-		return ship; // set
-	}
-	public char getHit(){ //setter method
-		return hit; // set
-	}
-	public char getMiss(){ //setter method
-		return miss; // set
-	}
+    private int length;
+    private int[][] position; //array to store the coordinates of each part of the ship
+    private boolean[] hits;   //array to track if each part of the ship has been hit
+    private boolean isHorizontal;
+
+    //constructor to initialize a ship with a given length and orientation
+    public BattleShip(int length, boolean isHorizontal) {
+        this.length = length;
+        this.isHorizontal = isHorizontal;
+        this.hits = new boolean[length];
+    }
+
+    /*
+     * place the ship at a given starting position
+     * 
+     */
+    public void placeShip(int startX, int startY) {
+        position = new int[length][2];
+        for (int i = 0; i < length; i++) {
+            position[i][0] = startX + (isHorizontal ? i : 0);
+            position[i][1] = startY + (isHorizontal ? 0 : i);
+        }
+    }
+
+    //check if a shot hits the ship
+    public boolean checkHit(int x, int y) {
+        for (int i = 0; i < length; i++) {
+            if (position[i][0] == x && position[i][1] == y) {
+                hits[i] = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //check if the ship has been sunk
+    public boolean isSunk() {
+        for (boolean hit : hits) {
+            if (!hit) return false;
+        }
+        return true;
+    }
+
+    //getter methods
+    public int getLength() {
+        return length;
+    }
+
+    public int[][] getPosition() {
+        return position;
+    }
+
+    public boolean isHorizontal() {
+        return isHorizontal;
+    }
+    
+    public void setHorizontal(boolean horizontal) {
+    	isHorizontal = horizontal; 
+    }
 }

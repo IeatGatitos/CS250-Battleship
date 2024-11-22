@@ -1,91 +1,176 @@
-import java.awt.EventQueue;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BattleShipGame extends JFrame {
+    private static final int GRID_SIZE = 10;
+    private JButton[][] playerGrid;
+    private JButton[][] opponentGrid;
+    private boolean isPlacingShips = true;
+    private int shipToPlace = 5; //start with 5 length then go down when placing ships
+    private boolean isHorizontal = true; //is turned false after ships are placed
+    private List<BattleShip> playerShips = new ArrayList<>();
+    private List<BattleShip> opponentShips = new ArrayList<>();
 
-    private static final long serialVersionUID = 1L;
-    private JPanel contentPane;
-    private JComboBox<String> comboAIorPlayer;
-    private JButton btnReady;
-    private JTextArea rulesTextArea; //display rules
+    
+    private final ImageIcon[] shipSprites = {
+        new ImageIcon("ship5block.png"),
+        new ImageIcon("ship4blocks.png"),
+        new ImageIcon("ship3blocks.png"),
+        new ImageIcon("ship2blocks.png")
+    };
 
-    /**
-     * Launch
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                BattleShipGame frame = new BattleShipGame();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+    public BattleShipGame() {
+        setTitle("Battleship Game");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+        setLayout(new GridLayout(1, 2));
+
+        playerGrid = createGrid("Your Grid");
+        opponentGrid = createGrid("Opponent's Grid");
+
+        add(createGridPanel(playerGrid, "Your Grid"));
+        add(createGridPanel(opponentGrid, "Opponent's Grid"));
+
+        JButton toggleOrientationButton = new JButton("Toggle Orientation");
+        toggleOrientationButton.addActionListener(e -> isHorizontal = !isHorizontal);
+        add(toggleOrientationButton, BorderLayout.SOUTH);
+
+        setVisible(true);
     }
 
-    /**
-     * frame
-     */
-    public BattleShipGame() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 450, 300);
-        contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(contentPane);
-        
-        //BoxLayout to stack components vertically
-        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-        
-        //the combo box
-        comboAIorPlayer = new JComboBox<>();
-        comboAIorPlayer.setModel(new DefaultComboBoxModel<>(new String[] {"AI", "Player"}));
-        contentPane.add(comboAIorPlayer);
-        
-        //Ready button
-        btnReady = new JButton("Ready?");
-        contentPane.add(btnReady);
-        
-        //Initialize and add rules text area
-        rulesTextArea = new JTextArea();
-        rulesTextArea.setEditable(false); // Make the text area read-only
-        rulesTextArea.setText("Game Rules:\n"
-                + "1. Place your ships on the grid.\n"
-                + "2. Use your turns to guess the locations of the opponent's ships.\n"
-                + "3. A hit will be SHOT, and if all parts of a ship are hit, it is sunk.\n"
-                + "4. The game ends when all ships of one player have sunk.\n"
-                + "5. Have fun!");
+    //The 10x10 play area is represented by a 10x10 grid of buttons
+    private JButton[][] createGrid(String title) {
+        JButton[][] grid = new JButton[GRID_SIZE][GRID_SIZE];
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                JButton button = new JButton();
+                button.setBackground(Color.CYAN);
+                button.addActionListener(new GridButtonListener(grid, row, col));
+                grid[row][col] = button;
+            }
+        }
+        return grid;
+    }
 
-        //scroll pane to the text area
-        JScrollPane scrollPane = new JScrollPane(rulesTextArea);
-        scrollPane.setPreferredSize(new java.awt.Dimension(400, 100)); //size for the scroll pane
-        contentPane.add(scrollPane);
+    //makes a panel using grid above
+    private JPanel createGridPanel(JButton[][] grid, String title) {
+        JPanel panel = new JPanel(new BorderLayout());
+        JLabel label = new JLabel(title, SwingConstants.CENTER);
+        panel.add(label, BorderLayout.NORTH);
 
-        //action listener to the button
-        btnReady.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String selected = (String) comboAIorPlayer.getSelectedItem();
-                if ("AI".equals(selected)) {
-                    //open the game screen for AI
-                    GameAi gameai = new GameAi();
-                    gameai.setVisible(true);
-                    dispose(); //close the current window
+        JPanel gridPanel = new JPanel(new GridLayout(GRID_SIZE, GRID_SIZE));
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                gridPanel.add(grid[row][col]);
+            }
+        }
+        panel.add(gridPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    //called in the grid listener
+    private boolean isValidPlacement(int startX, int startY) {
+    	//check if out of bounds
+        if (isHorizontal) {
+            if (startX + shipToPlace > GRID_SIZE) {
+                return false;
+            }
+        } else {
+            if (startY + shipToPlace > GRID_SIZE) {
+                return false;
+            }
+        }
+
+        //check overlap
+        for (BattleShip ship : playerShips) {
+            for (int i = 0; i < shipToPlace; i++) {
+                int x = startX;
+                int y = startY;
+                if (isHorizontal) {
+                    x += i;
                 } else {
-                    //starting a player vs player game can go here
-                    JOptionPane.showMessageDialog(null, "Starting player vs player game!");
+                    y += i;
+                }
+                for (int[] part : ship.getPosition()) {
+                    if (part[0] == x && part[1] == y) {
+                        return false;
+                    }
                 }
             }
-        });
+        }
+        return true;
+    }
+
+    private void placeShip(int startX, int startY) {
+        BattleShip newShip = new BattleShip(shipToPlace, isHorizontal);
+        newShip.placeShip(startX, startY);
+        playerShips.add(newShip);
+
+        //place sprite and mark positions
+        for (int i = 0; i < shipToPlace; i++) {
+            int x = startX;
+            int y = startY;
+            if (isHorizontal) {
+                x += i;
+            } else {
+                y += i;
+            }
+            JButton button = playerGrid[x][y];
+            button.setBackground(Color.GRAY);
+            if (i == 0) {
+                button.setIcon(shipSprites[5 - shipToPlace]); //ship starts on the space clicked
+            }
+        }
+    }
+
+    private class GridButtonListener implements ActionListener {
+        private final JButton[][] grid;
+        private final int row;
+        private final int col;
+
+        public GridButtonListener(JButton[][] grid, int row, int col) {
+            this.grid = grid;
+            this.row = row;
+            this.col = col;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JButton button = grid[row][col];
+            
+            
+            if (isPlacingShips) {
+                if (isValidPlacement(row, col)) {
+                    placeShip(row, col);
+                    JOptionPane.showMessageDialog(BattleShipGame.this, "Ship placed!");
+                    shipToPlace--;
+                    if (shipToPlace < 2) {
+                        isPlacingShips = false;
+                        JOptionPane.showMessageDialog(BattleShipGame.this, "All ships placed! Start attacking.");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(BattleShipGame.this, "Invalid placement. Try again.");
+                }
+            } else {
+                //handling attacks is unfinished
+                if (grid == opponentGrid) {
+                    if (button.getBackground() == Color.CYAN) {
+                        button.setBackground(Color.RED); //hit
+                        JOptionPane.showMessageDialog(BattleShipGame.this, "Hit!");
+                    } else if (button.getBackground() == Color.GRAY) {
+                        button.setBackground(Color.BLUE); //not doing green for miss because I'm colorblind
+                        JOptionPane.showMessageDialog(BattleShipGame.this, "Miss!");
+                    }
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(BattleShipGame::new);
     }
 }

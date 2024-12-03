@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +9,11 @@ public class GameAi extends JFrame {
     private static final int GRID_SIZE = 10;
     private JButton[][] shootingGridButtons = new JButton[GRID_SIZE][GRID_SIZE];
     private JButton[][] shipPlacementGridButtons = new JButton[GRID_SIZE][GRID_SIZE];
-    private List<Point> playerShipLocations = new ArrayList<>(); //stores player ship locations
-    private List<Point> aiShipLocations = new ArrayList<>(); //stores AI ship locations
-    private int shipsPlaced = 0; //counter for player-placed ships
-    private int aiShipsRemaining = 4; //#of AI ships remaining
-    private int playerShipsRemaining = 4; //# of player ships remaining
+    private char[][] userViewGrid = new char[GRID_SIZE][GRID_SIZE]; //hits/misses on AI grid
+    private int[][] aiGrid = new int[GRID_SIZE][GRID_SIZE]; //AI ship placement (1 = ship, 0 = water)
+    private List<Point> playerShipLocations = new ArrayList<>();
+    private int aiShipsRemaining = 4; //AI ships remaining
+    private int playerShipsRemaining = 4; //player ships remaining
     private Random random = new Random();
 
     public GameAi() {
@@ -23,66 +22,59 @@ public class GameAi extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        //label for the game
+        // Label for the game
         JLabel titleLabel = new JLabel("Battleship Game", JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         add(titleLabel, BorderLayout.NORTH);
 
-        //main game panel
-        JPanel mainPanel = new JPanel(new GridLayout(2, 1)); //2 rows for the grids
-
-        //shooting grid (top)
-        JPanel shootingGrid = createShootingGrid();
-        mainPanel.add(shootingGrid);
-
-        //ship placement grid (bottom)
-        JPanel shipPlacementGrid = createShipPlacementGrid();
-        mainPanel.add(shipPlacementGrid);
-
-        //add main panel to the center of the frame
+        // Main game panel
+        JPanel mainPanel = new JPanel(new GridLayout(2, 1));
+        mainPanel.add(createShootingGrid()); // Shooting grid (top)
+        mainPanel.add(createShipPlacementGrid()); // Ship placement grid (bottom)
         add(mainPanel, BorderLayout.CENTER);
 
-        //sidebar for rules and functionality
-        JPanel sidebar = createSidebar();
-        add(sidebar, BorderLayout.EAST);
+        // rules and functionality
+        add(createSidebar(), BorderLayout.EAST);
 
-        //place AI ships
-        placeAIShips();
+        initializeGrids(); //Initialize userViewGrid and aiGrid
+        placeAIShips(); //place AI ships on its grid
+    }
+
+    private void initializeGrids() {
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                userViewGrid[row][col] = 'U'; //untouched cell
+                aiGrid[row][col] = 0; //no ship by default
+            }
+        }
     }
 
     private JPanel createShootingGrid() {
-        JPanel gridPanel = new JPanel();
-        gridPanel.setLayout(new BorderLayout());
+        JPanel gridPanel = new JPanel(new BorderLayout());
 
-        //panel for the top labels (column numbers)
-        JPanel labelPanel = new JPanel();
-        labelPanel.setLayout(new GridLayout(1, GRID_SIZE + 1));
+        // Top labels for column numbers
+        JPanel labelPanel = new JPanel(new GridLayout(1, GRID_SIZE + 1));
         labelPanel.add(new JLabel("")); // Empty corner
-
-        //column numbers (1-10)
         for (int i = 1; i <= GRID_SIZE; i++) {
             labelPanel.add(new JLabel(String.valueOf(i), JLabel.CENTER));
         }
         gridPanel.add(labelPanel, BorderLayout.NORTH);
 
-        //grid for shooting
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
-
+        // Shooting grid buttons
+        JPanel buttonPanel = new JPanel(new GridLayout(GRID_SIZE, GRID_SIZE));
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
                 JButton button = new JButton();
-                button.setBackground(Color.CYAN); // Initial color for water
                 final int r = row;
                 final int c = col;
-                button.addActionListener(e -> handleShooting(r, c, button));
-                shootingGridButtons[row][col] = button; // Store button reference
+                button.addActionListener(e -> handleShooting(r, c));
+                shootingGridButtons[row][col] = button;
                 buttonPanel.add(button);
             }
         }
         gridPanel.add(buttonPanel, BorderLayout.CENTER);
 
-        //row labels (A-J) on the left side
+        // Row labels (A-J)
         JPanel rowLabelPanel = new JPanel(new GridLayout(GRID_SIZE, 1));
         for (char row = 'A'; row < 'A' + GRID_SIZE; row++) {
             rowLabelPanel.add(new JLabel(String.valueOf(row), JLabel.CENTER));
@@ -92,32 +84,29 @@ public class GameAi extends JFrame {
         return gridPanel;
     }
 
-    private JPanel createShipPlacementGrid() {
+    private JPanel createShipPlacementGrid() {//this is recreated
         JPanel gridPanel = new JPanel();
         gridPanel.setLayout(new BorderLayout());
 
-        //panel for the top labels (column numbers)
+        // Panel for the top labels (column numbers)
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new GridLayout(1, GRID_SIZE + 1));
         labelPanel.add(new JLabel("")); // Empty corner
 
-        //column numbers (1-10)
+        // Column numbers (1-10)
         for (int i = 1; i <= GRID_SIZE; i++) {
             labelPanel.add(new JLabel(String.valueOf(i), JLabel.CENTER));
         }
         gridPanel.add(labelPanel, BorderLayout.NORTH);
 
         // The grid for placing ships
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
-
+        JPanel buttonPanel = new JPanel(new GridLayout(GRID_SIZE, GRID_SIZE));
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
+                final int r = row; // create a final copy of row
+                final int c = col; //create a final copy of col
                 JButton button = new JButton();
-                button.setBackground(Color.CYAN);
-                final int r = row;
-                final int c = col;
-                button.addActionListener(e -> handleShipPlacement(r, c, button));
+                button.addActionListener(e -> handleShipPlacement(r, c, button)); // final variables
                 shipPlacementGridButtons[row][col] = button;
                 buttonPanel.add(button);
             }
@@ -134,6 +123,7 @@ public class GameAi extends JFrame {
         return gridPanel;
     }
 
+
     private JPanel createSidebar() {
         JPanel sidebarPanel = new JPanel();
         sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
@@ -144,10 +134,13 @@ public class GameAi extends JFrame {
 
         JTextArea rulesTextArea = new JTextArea(10, 20);
         rulesTextArea.setEditable(false);
-        rulesTextArea.setText("1. Place your ships on the bottom grid.\n"
-                + "2. Use the top grid to shoot at the AI's ships.\n"
-                + "3. A hit will change the color of the button.\n"
-                + "4. The game ends when all ships are sunk.");
+        rulesTextArea.setText("""
+                1. Place your ships on the bottom grid.
+                2. Use the top grid to shoot at the AI's ships.
+                3. A hit will be marked with 'X'.
+                4. A miss will be marked with 'O'.
+                5. The game ends when all ships are sunk.
+                """);
         sidebarPanel.add(new JScrollPane(rulesTextArea));
 
         JButton resetGameButton = new JButton("Reset Game");
@@ -169,7 +162,7 @@ public class GameAi extends JFrame {
                     for (int i = 0; i < size; i++) {
                         int r = row + (horizontal ? 0 : i);
                         int c = col + (horizontal ? i : 0);
-                        aiShipLocations.add(new Point(r, c));
+                        aiGrid[r][c] = 1; //mark ship in aiGrid
                     }
                     placed = true;
                 }
@@ -181,33 +174,62 @@ public class GameAi extends JFrame {
         for (int i = 0; i < size; i++) {
             int r = row + (horizontal ? 0 : i);
             int c = col + (horizontal ? i : 0);
-            if (r >= GRID_SIZE || c >= GRID_SIZE || aiShipLocations.contains(new Point(r, c))) {
+            if (r >= GRID_SIZE || c >= GRID_SIZE || aiGrid[r][c] == 1) {
                 return false;
             }
         }
         return true;
     }
 
-    private void handleShooting(int row, int col, JButton button) {
-        if (button.getBackground() == Color.CYAN) { //if it's water
-            Point shot = new Point(row, col);
-            if (aiShipLocations.contains(shot)) {
-                button.setBackground(Color.RED); //hit
-                aiShipLocations.remove(shot);
-                aiShipsRemaining--;
-                JOptionPane.showMessageDialog(this, "You hit an AI ship!");
-                if (aiShipsRemaining == 0) {
-                    JOptionPane.showMessageDialog(this, "You win!");
-                    resetGame();
-                    return;
-                }
-            } else {
-                button.setBackground(Color.GRAY); // Miss
-                JOptionPane.showMessageDialog(this, "You missed!");
-            }
-            aiTurn(); //AI shoots after player's turn
+    private void handleShooting(int row, int col) {
+        if (userViewGrid[row][col] != 'U') {
+            JOptionPane.showMessageDialog(this, "You already attacked this position!");
+            return;
+        }
+
+        if (aiGrid[row][col] == 1) { //hit
+            userViewGrid[row][col] = 'X';
+            aiShipsRemaining--;
+            JOptionPane.showMessageDialog(this, "Hit!");
+        } else { // Miss
+            userViewGrid[row][col] = 'O';
+            JOptionPane.showMessageDialog(this, "Miss!");
+        }
+
+        repaintTopGrid();
+
+        if (aiShipsRemaining == 0) {
+            JOptionPane.showMessageDialog(this, "You win!");
+            resetGame();
         } else {
-            JOptionPane.showMessageDialog(this, "You already shot here!");
+            aiTurn();
+        }
+    }
+
+    private void repaintTopGrid() {
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                JButton button = shootingGridButtons[row][col];
+                char value = userViewGrid[row][col];
+
+                if (value == 'X' || value == 'O') {
+                    button.setText(String.valueOf(value));
+                } else {
+                    button.setText("");
+                }
+            }
+        }
+    }
+
+    private void handleShipPlacement(int row, int col, JButton button) {
+        if (playerShipLocations.size() < 4 && button.getText().isEmpty()) {
+            button.setText("S");
+            playerShipLocations.add(new Point(row, col));
+            if (playerShipLocations.size() == 4) {
+                JOptionPane.showMessageDialog(this, "All ships placed!");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid ship placement!");
         }
     }
 
@@ -219,48 +241,29 @@ public class GameAi extends JFrame {
             int col = random.nextInt(GRID_SIZE);
             JButton targetButton = shipPlacementGridButtons[row][col];
 
-            if (targetButton.getBackground() == Color.CYAN) { //unshot location
-                Point shot = new Point(row, col);
-                if (playerShipLocations.contains(shot)) {
-                    targetButton.setBackground(Color.RED); //hit
-                    playerShipLocations.remove(shot);
+            if (targetButton.getBackground() != Color.RED && targetButton.getBackground() != Color.GRAY) {
+                if (targetButton.getText().equals("S")) { //hit
+                    targetButton.setBackground(Color.RED);
                     playerShipsRemaining--;
-                    JOptionPane.showMessageDialog(this, "AI hit your ship at " + (char) ('A' + row) + (col + 1) + "!");
-                    if (playerShipsRemaining == 0) {
-                        JOptionPane.showMessageDialog(this, "AI wins!");
-                        resetGame();
-                        return;
-                    }
-                } else {
-                    targetButton.setBackground(Color.GRAY); //miss
-                    JOptionPane.showMessageDialog(this, "AI missed!");
+                    JOptionPane.showMessageDialog(this, "AI hit your ship!");
+                } else { //miss
+                    targetButton.setBackground(Color.GRAY);
                 }
                 shotTaken = true;
             }
         }
-    }
 
-    private void handleShipPlacement(int row, int col, JButton button) {
-        if (button.getText().isEmpty()) { //button is unoccupied
-            button.setText("S");
-            playerShipLocations.add(new Point(row, col));
-            shipsPlaced++;
-            if (shipsPlaced >= 4) { //change based on the number of player ships
-                JOptionPane.showMessageDialog(this, "All ships placed!");
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "This location is already occupied!");
+        if (playerShipsRemaining == 0) {
+            JOptionPane.showMessageDialog(this, "AI wins!");
+            resetGame();
         }
     }
 
     private void resetGame() {
         dispose();
-        SwingUtilities.invokeLater(() -> {
-            GameAi gameAi = new GameAi();
-            gameAi.setVisible(true);
-        });
+        new GameAi();
     }
-
+    
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             GameAi gameAi = new GameAi();

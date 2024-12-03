@@ -182,27 +182,28 @@ public class GameAi extends JFrame {
     }
 
     private void handleShooting(int row, int col) {
-        if (userViewGrid[row][col] != 'U') {
+        if (userViewGrid[row][col] != 'U') { // Already attacked
             JOptionPane.showMessageDialog(this, "You already attacked this position!");
             return;
         }
 
-        if (aiGrid[row][col] == 1) { //hit
+        if (aiGrid[row][col] == 1) { // Hit
             userViewGrid[row][col] = 'X';
             aiShipsRemaining--;
-            JOptionPane.showMessageDialog(this, "Hit!");
+            JOptionPane.showMessageDialog(this, "Hit! You can shoot again.");
+            repaintTopGrid();
+
+            if (aiShipsRemaining == 0) { // Player wins
+                JOptionPane.showMessageDialog(this, "You win!");
+                resetGame();
+            }
+            return; // Allow the player to shoot again
         } else { // Miss
             userViewGrid[row][col] = 'O';
-            JOptionPane.showMessageDialog(this, "Miss!");
-        }
+            JOptionPane.showMessageDialog(this, "Miss! AI's turn.");
+            repaintTopGrid();
 
-        repaintTopGrid();
-
-        if (aiShipsRemaining == 0) {
-            JOptionPane.showMessageDialog(this, "You win!");
-            resetGame();
-        } else {
-            aiTurn();
+            aiTurn(); // AI takes its turn after a miss
         }
     }
 
@@ -232,7 +233,6 @@ public class GameAi extends JFrame {
             JOptionPane.showMessageDialog(this, "Invalid ship placement!");
         }
     }
-
     private void aiTurn() {
         boolean shotTaken = false;
 
@@ -241,27 +241,58 @@ public class GameAi extends JFrame {
             int col = random.nextInt(GRID_SIZE);
             JButton targetButton = shipPlacementGridButtons[row][col];
 
+            // Check if the AI has already shot here
             if (targetButton.getBackground() != Color.RED && targetButton.getBackground() != Color.GRAY) {
-                if (targetButton.getText().equals("S")) { //hit
-                    targetButton.setBackground(Color.RED);
+                if (targetButton.getText().equals("S")) { // AI hits a ship
+                    targetButton.setBackground(Color.RED); // Mark hit on the user's grid
                     playerShipsRemaining--;
                     JOptionPane.showMessageDialog(this, "AI hit your ship!");
-                } else { //miss
-                    targetButton.setBackground(Color.GRAY);
+
+                    // Show hit on user's grid
+                    shipPlacementGridButtons[row][col].setText("X");
+
+                    if (playerShipsRemaining == 0) { // AI wins
+                        JOptionPane.showMessageDialog(this, "AI wins!");
+                        resetGame();
+                    }
+                } else { // Miss
+                    targetButton.setBackground(Color.GRAY); // Mark miss on the user's grid
+                    JOptionPane.showMessageDialog(this, "AI missed! Your turn.");
+
+                    // Show miss on user's grid
+                    shipPlacementGridButtons[row][col].setText("O");
                 }
-                shotTaken = true;
+                shotTaken = true; // End AI's turn after one shot
             }
         }
-
         if (playerShipsRemaining == 0) {
             JOptionPane.showMessageDialog(this, "AI wins!");
-            resetGame();
         }
     }
 
     private void resetGame() {
-        dispose();
-        new GameAi();
+        // Clear the ship placement grid and the shooting grid
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                // Reset the ship placement grid buttons to empty
+                shipPlacementGridButtons[row][col].setText("");
+                shipPlacementGridButtons[row][col].setBackground(null);
+                
+                // Reset the shooting grid buttons
+                shootingGridButtons[row][col].setText("");
+                shootingGridButtons[row][col].setBackground(null);
+            }
+        }
+        // Reset player and AI ship counts
+        playerShipsRemaining = 4;
+        aiShipsRemaining = 4;
+        // Clear the player ship locations
+        playerShipLocations.clear();
+        // Reinitialize the grids
+        initializeGrids();
+        placeAIShips();
+        //inform the user that the game is reset
+        JOptionPane.showMessageDialog(this, "Game has been reset. You can place your ships again.");
     }
     
     public static void main(String[] args) {

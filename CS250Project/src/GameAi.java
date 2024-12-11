@@ -1,6 +1,6 @@
 /**
  * Class: GameAi
- * Author: Kimberle Ramirez,
+ * Author: Kimberle Ramirez, Jack Curran
  * Date: 12/11/2024
  * Assignment: Final
  * Description: 
@@ -62,6 +62,7 @@ public class GameAi extends JFrame {
         mainPanel.add(createShootingGrid()); // Shooting grid (top)
         mainPanel.add(createShipPlacementGrid()); // Ship placement grid (bottom)
         add(mainPanel, BorderLayout.CENTER);
+        mainPanel.setBackground(Color.BLUE);
         // rules and functionality
         add(createSidebar(), BorderLayout.EAST);
         initializeGrids(); //Initialize userViewGrid and aiGrid
@@ -272,7 +273,7 @@ public class GameAi extends JFrame {
      private void handleShooting(int row, int col) {
          // Check if the user has already attacked the chosen position.
          if (userViewGrid[row][col] != 'U') { // 'U' represents an unvisited cell.
-             JOptionPane.showMessageDialog(this, "You already attacked this position!");
+             logPlayerAction("You already attacked this position!");
              return;
          }
 
@@ -312,6 +313,9 @@ public class GameAi extends JFrame {
 
                 if (value == 'X' || value == 'O') {
                     button.setText(String.valueOf(value));
+                    if (value == 'X') {
+                    	button.setBackground(Color.RED);
+                    } else button.setVisible(false); //with blue background should look kinda like water this way
                 } else {
                     button.setText("");
                 }
@@ -358,15 +362,15 @@ public class GameAi extends JFrame {
                     playerShipLocations.add(new Point(r, c));
                 }
                 // Notify the user
-                JOptionPane.showMessageDialog(this, "Ship of size " + shipSize + " placed!");
+                logPlayerAction("Ship of size " + shipSize + " placed!");
 
                 // Check if all ships are placed
                 if (playerShipLocations.size() == 17) {
                     allShipsPlaced = true;
-                    JOptionPane.showMessageDialog(this, "All ships placed! Ready to start the game.");
+                    logPlayerAction("All ships placed! Ready to start the game.");
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Invalid ship placement! Make sure ships fit on the grid.");
+                logPlayerAction("Invalid ship placement! Make sure ships fit on the grid.");
             }
         }
     }
@@ -397,7 +401,7 @@ public class GameAi extends JFrame {
         while (!shotTaken) {
             int row, col;
 
-            // AI has previously hit a target, try to target other nearby cellls
+            // AI has previously hit a target, try to target other nearby cells
             if (!aiHits.isEmpty()) {
                 Point lastHit = aiHits.get(0); // Get the last hit location
                 // Get a list of adjacent cells to the last hit
@@ -426,6 +430,7 @@ public class GameAi extends JFrame {
                     playerShipsRemaining--; // Decrease the number of remaining player ships.
                     aiHits.add(new Point(row, col)); // Track the hit location.
                     shipPlacementGridButtons[row][col].setText("X"); // Mark the cell with "X" for hit.
+                    shipPlacementGridButtons[row][col].setBackground(Color.RED);
                     
                     // Log the AI's successful hit.
                     logAIAction("AI hit at (" + (char)('A' + row) + "," + (col + 1) + ")");
@@ -439,6 +444,7 @@ public class GameAi extends JFrame {
                 } else { // Miss
                     targetButton.setBackground(Color.GRAY); // Mark the miss (gray).
                     shipPlacementGridButtons[row][col].setText("O"); // Mark the cell with "O" for miss.
+                    shipPlacementGridButtons[row][col].setVisible(false); //so it looks like empty water on a miss
                     
                     // Log the AI's miss.
                     logAIAction("AI missed at (" + (char)('A' + row) + "," + (col + 1) + ")");
@@ -464,7 +470,7 @@ public class GameAi extends JFrame {
     // Helper method to check if a cell has already been shot
     private boolean isCellAlreadyShot(int row, int col) {
         JButton targetButton = shipPlacementGridButtons[row][col];
-        return targetButton.getText().equals("X") || targetButton.getText().equals("O"); // Check if the cell has been sho
+        return targetButton.getText().equals("X") || targetButton.getText().equals("O"); // Check if the cell has been shot
     }
     
 //reset all to null/0
@@ -475,9 +481,11 @@ public class GameAi extends JFrame {
                 // Reset the ship placement grid buttons to empty
                 shipPlacementGridButtons[row][col].setText("");
                 shipPlacementGridButtons[row][col].setBackground(null);
+                shipPlacementGridButtons[row][col].setVisible(true);
                 // Reset the shooting grid buttons
                 shootingGridButtons[row][col].setText("");
                 shootingGridButtons[row][col].setBackground(null);
+                shootingGridButtons[row][col].setVisible(true);
             }
         }
         // Reset player and AI ship counts

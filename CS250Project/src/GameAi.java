@@ -46,10 +46,12 @@ public class GameAi extends JFrame {
     private JTextArea logsTextArea; //action logs
     int gridWidth = 10;  // Number of columns
     int gridHeight = 10; // Number of rows
+    Color ocean = new Color(79,66,181); //for the background
 
     //layout for grids /sidebar
     public GameAi() {
         setTitle("Battleship Game");
+        setBackground(ocean);
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -313,9 +315,6 @@ public class GameAi extends JFrame {
 
                 if (value == 'X' || value == 'O') {
                     button.setText(String.valueOf(value));
-                    if (value == 'X') {
-                    	button.setBackground(Color.RED);
-                    } else button.setVisible(false); //with blue background should look kinda like water this way
                 } else {
                     button.setText("");
                 }

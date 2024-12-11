@@ -1,3 +1,25 @@
+/**
+ * Class: BattleShipGame
+ * Author: Kimberle Ramirez, Jack
+ * Date: 12/11/2024
+ * Assignment: Final
+ * Description:
+ * This class creates the main window of the Battleship game. It allows the user to choose between playing against the AI or another player
+ * Ready?" button is clicked, the game starts depending on the user's choice. If "AI" is selected, it opens the game screen for AI gameplay. If "Player" is selected, it shows a message that a player-vs-player game will start but never does
+ * 
+ * Inputs:
+ * - The player selects "AI" or "Player" from the combo box.
+ * 
+ * Outputs:
+ * - A new game window opens based on the selected option (AI or Player)
+ * - Rules are displayed in the text area for the player to read.
+ * 
+ * Methods:
+ * - main(String[] args): invoking the BattleShipGame frame
+ * - BattleShipGame(): initialize combo box, "Ready?" button, and rules text area
+ * - actionPerformed(ActionEvent e): Listens for clicks on the "Ready?" button and initiates the appropriate game mode (AI or Player)
+ */
+
 import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;

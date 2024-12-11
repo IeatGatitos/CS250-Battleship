@@ -316,7 +316,7 @@ public class GameAi extends JFrame {
                 if (value == 'X' || value == 'O') {
                     button.setText(String.valueOf(value));
                     if (value == 'X') {
-                    	button.setBackground(Color.RED);
+                    	button.setForeground(Color.RED);
                     } else button.setVisible(false);
                 } else {
                     button.setText("");
@@ -432,7 +432,7 @@ public class GameAi extends JFrame {
                     playerShipsRemaining--; // Decrease the number of remaining player ships.
                     aiHits.add(new Point(row, col)); // Track the hit location.
                     shipPlacementGridButtons[row][col].setText("X"); // Mark the cell with "X" for hit.
-                    shipPlacementGridButtons[row][col].setBackground(Color.RED);
+                    shipPlacementGridButtons[row][col].setForeground(Color.RED);
                     
                     // Log the AI's successful hit.
                     logAIAction("AI hit at (" + (char)('A' + row) + "," + (col + 1) + ")");
@@ -444,7 +444,7 @@ public class GameAi extends JFrame {
                     }
                     continue; // Skip the rest of the loop, as the AI needs to try again after a hit.
                 } else { // Miss
-                    targetButton.setBackground(Color.GRAY); // Mark the miss (gray).
+                    targetButton.setForeground(Color.GRAY); // Mark the miss (gray).
                     shipPlacementGridButtons[row][col].setText("O"); // Mark the cell with "O" for miss.
                     // shipPlacementGridButtons[row][col].setVisible(false); //so it looks like empty water on a miss
                     
@@ -483,10 +483,12 @@ public class GameAi extends JFrame {
                 // Reset the ship placement grid buttons to empty
                 shipPlacementGridButtons[row][col].setText("");
                 shipPlacementGridButtons[row][col].setBackground(null);
+                shipPlacementGridButtons[row][col].setForeground(null);
                 shipPlacementGridButtons[row][col].setVisible(true);
                 // Reset the shooting grid buttons
                 shootingGridButtons[row][col].setText("");
                 shootingGridButtons[row][col].setBackground(null);
+                shootingGridButtons[row][col].setForeground(null);
                 shootingGridButtons[row][col].setVisible(true);
             }
         }

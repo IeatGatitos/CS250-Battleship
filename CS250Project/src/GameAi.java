@@ -46,7 +46,7 @@ public class GameAi extends JFrame {
     private JTextArea logsTextArea; //action logs
     int gridWidth = 10;  // Number of columns
     int gridHeight = 10; // Number of rows
-    Color ocean = new Color(79,66,181); //for the background
+    Color ocean = new Color(79,66,181);
 
     //layout for grids /sidebar
     public GameAi() {
@@ -315,6 +315,9 @@ public class GameAi extends JFrame {
 
                 if (value == 'X' || value == 'O') {
                     button.setText(String.valueOf(value));
+                    if (value == 'X') {
+                    	button.setBackground(Color.RED);
+                    } else button.setVisible(false);
                 } else {
                     button.setText("");
                 }
@@ -443,7 +446,7 @@ public class GameAi extends JFrame {
                 } else { // Miss
                     targetButton.setBackground(Color.GRAY); // Mark the miss (gray).
                     shipPlacementGridButtons[row][col].setText("O"); // Mark the cell with "O" for miss.
-                    shipPlacementGridButtons[row][col].setVisible(false); //so it looks like empty water on a miss
+                    // shipPlacementGridButtons[row][col].setVisible(false); //so it looks like empty water on a miss
                     
                     // Log the AI's miss.
                     logAIAction("AI missed at (" + (char)('A' + row) + "," + (col + 1) + ")");

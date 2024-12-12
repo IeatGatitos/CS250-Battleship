@@ -65,7 +65,6 @@ public class GameAi extends JFrame {
         mainPanel.add(createShipPlacementGrid()); // Ship placement grid (bottom)
         add(mainPanel, BorderLayout.CENTER);
         mainPanel.setBackground(ocean);
-        mainPanel.setForeground(ocean);
         // rules and functionality
         add(createSidebar(), BorderLayout.EAST);
         initializeGrids(); //Initialize userViewGrid and aiGrid
@@ -425,10 +424,10 @@ public class GameAi extends JFrame {
                 row = random.nextInt(GRID_SIZE);
                 col = random.nextInt(GRID_SIZE);
                 // Only shoot at cells that haven't been shot
-                while (!isCellAlreadyShot(row,col)) {
+              /*  while (!isCellAlreadyShot(row,col)) {
                 	row = random.nextInt(GRID_SIZE);
                     col = random.nextInt(GRID_SIZE);
-                }
+                }*/
             }
             // Get the target button on the player's grid.
             JButton targetButton = shipPlacementGridButtons[row][col];

@@ -278,6 +278,10 @@ public class GameAi extends JFrame {
              logPlayerAction("You already attacked this position!");
              return;
          }
+         
+         if (aiShipsRemaining == 0 || playerShipsRemaining == 0) {
+        	 return;
+         }
 
          // Check if the user's shot is a hit on an AI ship
          if (aiGrid[row][col] == 1) { // AI's ship is represented by '1' in aigrid

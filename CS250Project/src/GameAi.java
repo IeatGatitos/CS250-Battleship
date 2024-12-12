@@ -424,14 +424,13 @@ public class GameAi extends JFrame {
                 row = random.nextInt(GRID_SIZE);
                 col = random.nextInt(GRID_SIZE);
                 // Only shoot at cells that haven't been shot
-              /*  while (!isCellAlreadyShot(row,col)) {
-                	row = random.nextInt(GRID_SIZE);
-                    col = random.nextInt(GRID_SIZE);
-                }*/
             }
             // Get the target button on the player's grid.
             JButton targetButton = shipPlacementGridButtons[row][col];
             // Check if the AI hit a ship
+              if (targetButton.getText().equals("X") || targetButton.getText().equals("O")) { ///checks yayyyy
+                continue; // Skip this target and try again
+            }
                 if (targetButton.getText().equals("S")) { // "S" 
                     playerShipsRemaining--; // Decrease the number of remaining player ships.
                     aiHits.add(new Point(row, col)); // Track the hit location.

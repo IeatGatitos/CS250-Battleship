@@ -316,8 +316,8 @@ public class GameAi extends JFrame {
                 if (value == 'X' || value == 'O') {
                     button.setText(String.valueOf(value));
                     if (value == 'X') {
-                    	button.setBackground(Color.RED);
-                    } 
+                    	button.setForeground(Color.RED);
+                    } else button.setForeground(Color.GRAY);
                 } else {
                     button.setText("");
                 }
@@ -435,7 +435,7 @@ public class GameAi extends JFrame {
                     playerShipsRemaining--; // Decrease the number of remaining player ships.
                     aiHits.add(new Point(row, col)); // Track the hit location.
                     shipPlacementGridButtons[row][col].setText("X"); // Mark the cell with "X" for hit.
-                    shipPlacementGridButtons[row][col].setBackground(Color.RED);
+                    shipPlacementGridButtons[row][col].setForeground(Color.RED);
                     
                     // Log the AI's successful hit.
                     logAIAction("AI hit at (" + (char)('A' + row) + "," + (col + 1) + ")");

@@ -1,6 +1,6 @@
 /**
  * Class: BattleShipGame
- * Author: Kimberle Ramirez, Jack
+ * Author: Kimberle Ramirez, Jack Curran
  * Date: 12/11/2024
  * Assignment: Final
  * Description:

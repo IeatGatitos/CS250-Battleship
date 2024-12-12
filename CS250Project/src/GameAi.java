@@ -64,7 +64,8 @@ public class GameAi extends JFrame {
         mainPanel.add(createShootingGrid()); // Shooting grid (top)
         mainPanel.add(createShipPlacementGrid()); // Ship placement grid (bottom)
         add(mainPanel, BorderLayout.CENTER);
-        mainPanel.setBackground(Color.BLUE);
+        mainPanel.setBackground(ocean);
+        mainPanel.setForeground(ocean);
         // rules and functionality
         add(createSidebar(), BorderLayout.EAST);
         initializeGrids(); //Initialize userViewGrid and aiGrid
@@ -423,11 +424,15 @@ public class GameAi extends JFrame {
                 // If the AI has no previous hits, select a random cell
                 row = random.nextInt(GRID_SIZE);
                 col = random.nextInt(GRID_SIZE);
+                // Only shoot at cells that haven't been shot
+                while (!isCellAlreadyShot(row,col)) {
+                	row = random.nextInt(GRID_SIZE);
+                    col = random.nextInt(GRID_SIZE);
+                }
             }
             // Get the target button on the player's grid.
             JButton targetButton = shipPlacementGridButtons[row][col];
-            // Only shoot at cells that haven't been shot
-                // Check if the AI hit a ship
+            // Check if the AI hit a ship
                 if (targetButton.getText().equals("S")) { // "S" 
                     playerShipsRemaining--; // Decrease the number of remaining player ships.
                     aiHits.add(new Point(row, col)); // Track the hit location.
